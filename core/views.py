@@ -1,20 +1,22 @@
-from django.shortcuts import render
-from pathlib import Path
 import json
-import sys
+from pathlib import Path
 
-
-RUTA_RAIZ = Path(__file__).resolve().parent.parent.parent
-sys.path.append(str(RUTA_RAIZ))
+from django.shortcuts import render
 
 from .services import evaluar_postulacion
+
+
+RUTA_RAIZ = Path(__file__).resolve().parent.parent
 
 
 def resumen(request):
     ruta_json = RUTA_RAIZ / "datos.json"
 
-    with open(ruta_json, "r", encoding="utf-8") as archivo:
-        registros = json.load(archivo)
+    try:
+        with open(ruta_json, "r", encoding="utf-8") as archivo:
+            registros = json.load(archivo)
+    except FileNotFoundError:
+        registros = []
 
     for registro in registros:
         registro["resultado"] = evaluar_postulacion(
@@ -22,4 +24,8 @@ def resumen(request):
             registro["horas_disponibles"]
         )
 
-    return render(request, "resumen.html", {"registros": registros})
+    return render(
+        request,
+        "resumen.html",
+        {"registros": registros}
+    )

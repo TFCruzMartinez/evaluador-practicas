@@ -1,0 +1,27 @@
+[
+  {
+    "semestre": 4,
+    "horas_disponibles": 25,
+    "resultado": "Aceptado: cumple los requisitos para postular."
+  },
+  {
+    "semestre": 3,
+    "horas_disponibles": 25,
+    "resultado": "Rechazado: no cumple con el semestre m\u00ednimo requerido."
+  },
+  {
+    "semestre": 5,
+    "horas_disponibles": 10,
+    "resultado": "Rechazado: no cumple con la disponibilidad horaria requerida."
+  },
+  {
+    "semestre": 0,
+    "horas_disponibles": 25,
+    "resultado": "Dato inv\u00e1lido: revise los valores ingresados."
+  },
+  {
+    "semestre": 4,
+    "horas_disponibles": 25,
+    "resultado": "Aceptado: cumple los requisitos para postular."
+  }
+]
