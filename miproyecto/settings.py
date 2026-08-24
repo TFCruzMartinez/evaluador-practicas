@@ -17,24 +17,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SEGURIDAD
 # =========================================================
 
-# En desarrollo utiliza una clave local.
-# En producción Render utilizará la variable SECRET_KEY.
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
     "django-insecure-clave-local-desarrollo"
 )
 
-
-# En local será True.
-# En Render configuraremos DEBUG=False.
 DEBUG = os.getenv(
     "DEBUG",
     "true"
 ).strip().lower() in ("true", "1", "yes")
 
-
-# En local permite localhost.
-# En Render configuraremos el dominio público.
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
@@ -65,6 +57,9 @@ INSTALLED_APPS = [
 
     # Swagger / OpenAPI
     "drf_spectacular",
+
+    # CORS para permitir consumo desde React
+    "corsheaders",
 ]
 
 
@@ -77,6 +72,9 @@ MIDDLEWARE = [
 
     # WhiteNoise para archivos estáticos en producción
     "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    # CORS
+    "corsheaders.middleware.CorsMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -220,3 +218,13 @@ SPECTACULAR_SETTINGS = {
     ),
     "VERSION": "1.0.0",
 }
+
+
+# =========================================================
+# CORS
+# =========================================================
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
