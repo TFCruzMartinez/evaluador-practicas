@@ -1,0 +1,30 @@
+# Entorno virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+db.sqlite3
+staticfiles/
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml
+
+# Variables de entorno
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
