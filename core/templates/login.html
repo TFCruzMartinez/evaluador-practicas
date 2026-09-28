@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión - Evaluador de Prácticas</title>
+</head>
+<body>
+
+    <h1>Evaluador de Prácticas</h1>
+    <h2>Iniciar sesión</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <p>
+            <label for="username">Usuario:</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="password">Contraseña:</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+            >
+        </p>
+
+        <button type="submit">
+            Iniciar sesión
+        </button>
+    </form>
+
+</body>
+</html>

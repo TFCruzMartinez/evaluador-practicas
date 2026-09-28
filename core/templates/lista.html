@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluador de Prácticas</title>
+</head>
+<body>
+
+    <h1>Evaluador de Prácticas</h1>
+
+    <p>
+        Usuario: <strong>{{ request.user.username }}</strong>
+        |
+        <a href="{% url 'logout' %}">Cerrar sesión</a>
+    </p>
+
+    {% if es_admin or es_normal %}
+        <p>
+            <a href="{% url 'crear' %}">Nuevo registro</a>
+        </p>
+    {% endif %}
+
+    {% if registros %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>Semestre</th>
+                    <th>Horas disponibles</th>
+                    <th>Resultado</th>
+                    <th>Fecha</th>
+
+                    {% if es_admin %}
+                        <th>Acciones</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for registro in registros %}
+                    <tr>
+                        <td>{{ registro.semestre }}</td>
+                        <td>{{ registro.horas_disponibles }}</td>
+                        <td>{{ registro.resultado }}</td>
+                        <td>{{ registro.fecha }}</td>
+
+                        {% if es_admin %}
+                            <td>
+                                <a href="{% url 'editar' registro.pk %}">
+                                    Editar
+                                </a>
+
+                                <a href="{% url 'eliminar' registro.pk %}">
+                                    Eliminar
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No existen registros todavía.</p>
+    {% endif %}
+
+</body>
+</html>

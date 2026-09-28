@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eliminar registro</title>
+</head>
+<body>
+
+    <h1>Eliminar registro</h1>
+
+    <p>¿Estás segura de que deseas eliminar este registro?</p>
+
+    <p>
+        <strong>Semestre:</strong>
+        {{ registro.semestre }}
+    </p>
+
+    <p>
+        <strong>Horas disponibles:</strong>
+        {{ registro.horas_disponibles }}
+    </p>
+
+    <p>
+        <strong>Resultado:</strong>
+        {{ registro.resultado }}
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <button type="submit">
+            Confirmar eliminación
+        </button>
+
+        <a href="{% url 'lista' %}">
+            Cancelar
+        </a>
+    </form>
+
+</body>
+</html>
