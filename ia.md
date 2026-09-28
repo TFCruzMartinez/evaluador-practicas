@@ -163,7 +163,27 @@ Cada cambio fue revisado mediante:
 - Pruebas automatizadas con `python manage.py test`.
 
 Esto permitió verificar que las modificaciones fueran compatibles con el proyecto y que no alteraran la lógica original de evaluación.
+## 9.1 Evidencia concreta del uso de Inteligencia Artificial
 
+### Herramienta utilizada
+
+Se utilizó ChatGPT como herramienta de apoyo durante el análisis y desarrollo de la migración.
+
+### Consulta realizada
+
+Una de las consultas realizadas fue:
+
+> "¿Cómo puedo migrar el Evaluador de Prácticas desde datos.json a SQLite utilizando un modelo de Django, migraciones y roles de usuario, sin modificar la función original evaluar_postulacion?"
+
+También se solicitó apoyo para revisar la implementación del modelo `Registro`, las migraciones de Django y la configuración de los roles `admin`, `normal` y `viewer`.
+
+### Correcciones y ajustes realizados
+
+Las respuestas de la Inteligencia Artificial fueron revisadas antes de incorporarlas al proyecto. Uno de los ajustes realizados fue mantener la función `evaluar_postulacion` existente como única fuente de la lógica de decisión, evitando duplicar esa lógica dentro de las vistas o del modelo.
+
+También se comprobó manualmente que los permisos no dependieran solamente de ocultar botones en la interfaz. Se probaron directamente las URL restringidas y se verificó que un usuario sin autorización recibiera una respuesta HTTP 403.
+
+Finalmente, las modificaciones fueron verificadas mediante `python manage.py check`, las migraciones de Django y las pruebas automatizadas del proyecto.
 ## 10. Resultado
 
 El uso de Inteligencia Artificial permitió apoyar el análisis y la implementación de mejoras, manteniendo la lógica original del proyecto.

@@ -256,6 +256,56 @@ Se ejecutó:
 
 `python manage.py test`
 
+## 11.1 Actualización de prioridades MoSCoW
+
+Durante la migración se actualizó la priorización de los requisitos del proyecto de acuerdo con el alcance real de esta entrega.
+
+### Must have
+
+- Persistencia mediante SQLite y Django ORM.
+- Modelo `Registro` y migraciones de Django.
+- CRUD de registros.
+- Reutilización de la función original `evaluar_postulacion`.
+- Borrado lógico de registros.
+- Autenticación mediante login y logout.
+- Autorización mediante los roles `admin`, `normal` y `viewer`.
+- Protección CSRF en formularios.
+- Validación de permisos desde el servidor.}
+
+La autenticación, que anteriormente no formaba parte del alcance principal, pasó a ser un requisito **Must**, debido a que es necesaria para implementar correctamente el control de acceso por roles.
+
+### Should have
+
+- Administración de registros mediante Django Admin.
+- Búsqueda y filtros desde el panel de administración.
+- Pruebas automatizadas para permisos, modelo y CRUD.
+
+### Could have
+
+- Mejoras adicionales en la interfaz visual.
+- Nuevas funcionalidades para la API.
+
+### Won't have en esta entrega
+
+- Automatización de procesos externos.
+- Funcionalidades adicionales que no formen parte de la migración solicitada.
+La autenticación, que anteriormente no formaba parte del alcance principal, pasó a ser un requisito **Must**, debido a que es necesaria para implementar correctamente el control de acceso por roles.
+
+### Should have
+
+- Administración de registros mediante Django Admin.
+- Búsqueda y filtros desde el panel de administración.
+- Pruebas automatizadas para permisos, modelo y CRUD.
+
+### Could have
+
+- Mejoras adicionales en la interfaz visual.
+- Nuevas funcionalidades para la API.
+
+### Won't have en esta entrega
+
+- Automatización de procesos externos.
+- Funcionalidades adicionales que no formen parte de la migración solicitada.
 Resultado final:
 
 - 20 tests ejecutados.
