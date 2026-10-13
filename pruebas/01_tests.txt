@@ -1,0 +1,11 @@
+Found 33 test(s).
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+/Users/tamaracruz/evaluador-practicas/.venv/lib/python3.13/site-packages/django/core/handlers/base.py:61: UserWarning: No directory at: /Users/tamaracruz/evaluador-practicas/staticfiles/
+  mw_instance = middleware(adapted_handler)
+.................................
+----------------------------------------------------------------------
+Ran 33 tests in 5.864s
+
+OK
+Destroying test database for alias 'default'...

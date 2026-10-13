@@ -1,14 +1,17 @@
+
 from django.test import SimpleTestCase, TestCase
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
+
 from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
 
 from .models import Registro
 from .services import evaluar_postulacion
 
 
 # ==========================================================
-# PRUEBAS DE LA LÓGICA ORIGINAL
+# PRUEBAS DE LA LOGICA ORIGINAL - EVA2
 # ==========================================================
 
 class EvaluadorPostulacionTests(SimpleTestCase):
@@ -50,63 +53,62 @@ class EvaluadorPostulacionTests(SimpleTestCase):
 
 
 # ==========================================================
-# PRUEBAS DE LA API
+# PRUEBAS DE LA API REST - ES3
 # ==========================================================
 
 class EvaluarAPITests(APITestCase):
 
     def setUp(self):
-        self.url = reverse("evaluar_api")
+        self.url = reverse("registro-list")
+
+        self.grupo_normal = Group.objects.create(
+            name="normal"
+        )
+
+        self.usuario = User.objects.create_user(
+            username="usuario_api",
+            password="ClaveTest123!"
+        )
+        self.usuario.groups.add(self.grupo_normal)
+        self.client.force_authenticate(user=self.usuario)
 
     def test_api_postulacion_aceptada(self):
-        datos = {
-            "semestre": 4,
-            "horas_disponibles": 20
-        }
-
         respuesta = self.client.post(
             self.url,
-            datos,
+            {
+                "semestre": 4,
+                "horas_disponibles": 20
+            },
             format="json"
         )
-
-        self.assertEqual(respuesta.status_code, 200)
-        self.assertIn(
-            "Aceptado",
-            respuesta.data["resultado"]
-        )
+        self.assertEqual(respuesta.status_code, 201)
+        self.assertIn("Aceptado", respuesta.data["resultado"])
 
     def test_api_rechazado_por_semestre(self):
-        datos = {
-            "semestre": 3,
-            "horas_disponibles": 20
-        }
-
         respuesta = self.client.post(
             self.url,
-            datos,
+            {
+                "semestre": 3,
+                "horas_disponibles": 20
+            },
             format="json"
         )
-
-        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.status_code, 201)
         self.assertIn(
             "semestre mínimo",
             respuesta.data["resultado"]
         )
 
     def test_api_rechazado_por_horas(self):
-        datos = {
-            "semestre": 4,
-            "horas_disponibles": 10
-        }
-
         respuesta = self.client.post(
             self.url,
-            datos,
+            {
+                "semestre": 4,
+                "horas_disponibles": 10
+            },
             format="json"
         )
-
-        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.status_code, 201)
         self.assertIn(
             "disponibilidad horaria",
             respuesta.data["resultado"]
@@ -118,34 +120,24 @@ class EvaluarAPITests(APITestCase):
             {"semestre": 4},
             format="json"
         )
-
         self.assertEqual(respuesta.status_code, 400)
-        self.assertEqual(
-            respuesta.data["error"],
-            "Debe enviar semestre y horas_disponibles."
-        )
+        self.assertIn("horas_disponibles", respuesta.data)
 
     def test_api_valores_no_numericos(self):
-        datos = {
-            "semestre": "cuarto",
-            "horas_disponibles": "veinte"
-        }
-
         respuesta = self.client.post(
             self.url,
-            datos,
+            {
+                "semestre": "cuarto",
+                "horas_disponibles": "veinte"
+            },
             format="json"
         )
-
         self.assertEqual(respuesta.status_code, 400)
-        self.assertEqual(
-            respuesta.data["error"],
-            "Los valores deben ser numéricos."
-        )
+        self.assertIn("semestre", respuesta.data)
 
 
 # ==========================================================
-# PRUEBAS DEL MODELO
+# PRUEBAS DEL MODELO - EVA2
 # ==========================================================
 
 class RegistroModelTests(TestCase):
@@ -156,7 +148,6 @@ class RegistroModelTests(TestCase):
             horas_disponibles=25,
             resultado=evaluar_postulacion(4, 25)
         )
-
         self.assertEqual(registro.semestre, 4)
         self.assertEqual(registro.horas_disponibles, 25)
         self.assertFalse(registro.eliminado)
@@ -168,21 +159,18 @@ class RegistroModelTests(TestCase):
             horas_disponibles=25,
             resultado=evaluar_postulacion(4, 25)
         )
-
         registro.soft_delete()
         registro.refresh_from_db()
 
         self.assertTrue(registro.eliminado)
         self.assertIsNotNone(registro.fecha_eliminacion)
-
-        # El registro continúa físicamente en la BD
         self.assertTrue(
             Registro.objects.filter(pk=registro.pk).exists()
         )
 
 
 # ==========================================================
-# PRUEBAS DE AUTENTICACIÓN Y ROLES
+# PRUEBAS DE AUTENTICACION Y ROLES WEB - EVA2
 # ==========================================================
 
 class PermisosTests(TestCase):
@@ -218,7 +206,6 @@ class PermisosTests(TestCase):
 
     def test_usuario_no_autenticado_va_a_login(self):
         respuesta = self.client.get(reverse("lista"))
-
         self.assertEqual(respuesta.status_code, 302)
         self.assertIn("/login/", respuesta.url)
 
@@ -227,9 +214,7 @@ class PermisosTests(TestCase):
             username="lector_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.get(reverse("lista"))
-
         self.assertEqual(respuesta.status_code, 200)
 
     def test_viewer_no_puede_crear(self):
@@ -237,9 +222,7 @@ class PermisosTests(TestCase):
             username="lector_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.get(reverse("crear"))
-
         self.assertEqual(respuesta.status_code, 403)
 
     def test_normal_puede_crear(self):
@@ -247,7 +230,6 @@ class PermisosTests(TestCase):
             username="operador_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.post(
             reverse("crear"),
             {
@@ -255,9 +237,7 @@ class PermisosTests(TestCase):
                 "horas_disponibles": 25
             }
         )
-
         self.assertEqual(respuesta.status_code, 302)
-
         self.assertTrue(
             Registro.objects.filter(
                 semestre=4,
@@ -271,14 +251,9 @@ class PermisosTests(TestCase):
             username="operador_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.get(
-            reverse(
-                "editar",
-                args=[self.registro.pk]
-            )
+            reverse("editar", args=[self.registro.pk])
         )
-
         self.assertEqual(respuesta.status_code, 403)
 
     def test_normal_no_puede_eliminar(self):
@@ -286,14 +261,9 @@ class PermisosTests(TestCase):
             username="operador_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.get(
-            reverse(
-                "eliminar",
-                args=[self.registro.pk]
-            )
+            reverse("eliminar", args=[self.registro.pk])
         )
-
         self.assertEqual(respuesta.status_code, 403)
 
     def test_admin_puede_editar_y_recalcula_resultado(self):
@@ -301,22 +271,16 @@ class PermisosTests(TestCase):
             username="admin_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.post(
-            reverse(
-                "editar",
-                args=[self.registro.pk]
-            ),
+            reverse("editar", args=[self.registro.pk]),
             {
                 "semestre": 3,
                 "horas_disponibles": 25
             }
         )
-
         self.assertEqual(respuesta.status_code, 302)
 
         self.registro.refresh_from_db()
-
         self.assertEqual(self.registro.semestre, 3)
         self.assertEqual(
             self.registro.resultado,
@@ -328,19 +292,187 @@ class PermisosTests(TestCase):
             username="admin_test",
             password="ClaveTest123!"
         )
-
         respuesta = self.client.post(
-            reverse(
-                "eliminar",
-                args=[self.registro.pk]
-            )
+            reverse("eliminar", args=[self.registro.pk])
         )
-
         self.assertEqual(respuesta.status_code, 302)
 
         self.registro.refresh_from_db()
-
         self.assertTrue(self.registro.eliminado)
-        self.assertIsNotNone(
-            self.registro.fecha_eliminacion
+        self.assertIsNotNone(self.registro.fecha_eliminacion)
+
+
+# ==========================================================
+# PRUEBAS DE SEGURIDAD Y PERMISOS API - ES3
+# ==========================================================
+
+class SeguridadAPITests(APITestCase):
+
+    def setUp(self):
+        self.url = reverse("registro-list")
+
+        self.viewer_group = Group.objects.create(name="viewer")
+        self.normal_group = Group.objects.create(name="normal")
+        self.admin_group = Group.objects.create(name="admin")
+
+        self.viewer = User.objects.create_user(
+            username="viewer_api",
+            password="ClaveTest123!"
         )
+        self.viewer.groups.add(self.viewer_group)
+
+        self.normal = User.objects.create_user(
+            username="normal_api",
+            password="ClaveTest123!"
+        )
+        self.normal.groups.add(self.normal_group)
+
+        self.admin_user = User.objects.create_user(
+            username="admin_api",
+            password="ClaveTest123!"
+        )
+        self.admin_user.groups.add(self.admin_group)
+
+        self.registro = Registro.objects.create(
+            semestre=4,
+            horas_disponibles=25,
+            resultado=evaluar_postulacion(4, 25)
+        )
+
+        self.detalle_url = reverse(
+            "registro-detail",
+            args=[self.registro.pk]
+        )
+
+    def test_sin_autenticacion_no_puede_listar(self):
+        respuesta = self.client.get(self.url)
+        self.assertEqual(respuesta.status_code, 401)
+
+    def test_viewer_puede_listar(self):
+        self.client.force_authenticate(user=self.viewer)
+        respuesta = self.client.get(self.url)
+        self.assertEqual(respuesta.status_code, 200)
+
+    def test_viewer_no_puede_crear(self):
+        self.client.force_authenticate(user=self.viewer)
+        respuesta = self.client.post(
+            self.url,
+            {
+                "semestre": 4,
+                "horas_disponibles": 20
+            },
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 403)
+
+    def test_normal_puede_crear(self):
+        self.client.force_authenticate(user=self.normal)
+        respuesta = self.client.post(
+            self.url,
+            {
+                "semestre": 4,
+                "horas_disponibles": 20
+            },
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 201)
+
+    def test_normal_no_puede_editar(self):
+        self.client.force_authenticate(user=self.normal)
+        respuesta = self.client.patch(
+            self.detalle_url,
+            {"semestre": 3},
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 403)
+
+    def test_admin_puede_editar(self):
+        self.client.force_authenticate(user=self.admin_user)
+        respuesta = self.client.patch(
+            self.detalle_url,
+            {"semestre": 3},
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 200)
+
+        self.registro.refresh_from_db()
+        self.assertEqual(self.registro.semestre, 3)
+        self.assertIn("Rechazado", self.registro.resultado)
+
+    def test_admin_puede_eliminar_logicamente(self):
+        self.client.force_authenticate(user=self.admin_user)
+        respuesta = self.client.delete(self.detalle_url)
+        self.assertEqual(respuesta.status_code, 204)
+
+        self.registro.refresh_from_db()
+        self.assertTrue(self.registro.eliminado)
+        self.assertIsNotNone(self.registro.fecha_eliminacion)
+
+        respuesta = self.client.get(self.detalle_url)
+        self.assertEqual(respuesta.status_code, 404)
+
+    def test_campos_protegidos_no_se_modifican(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        respuesta = self.client.patch(
+            self.detalle_url,
+            {
+                "resultado": "Manipulado",
+                "eliminado": True,
+                "fecha_eliminacion": "2026-01-01T00:00:00Z"
+            },
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 200)
+
+        self.registro.refresh_from_db()
+        self.assertNotEqual(self.registro.resultado, "Manipulado")
+        self.assertFalse(self.registro.eliminado)
+        self.assertIsNone(self.registro.fecha_eliminacion)
+
+    def test_semestre_invalido(self):
+        self.client.force_authenticate(user=self.normal)
+        respuesta = self.client.post(
+            self.url,
+            {
+                "semestre": 0,
+                "horas_disponibles": 20
+            },
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 400)
+
+    def test_horas_negativas(self):
+        self.client.force_authenticate(user=self.normal)
+        respuesta = self.client.post(
+            self.url,
+            {
+                "semestre": 4,
+                "horas_disponibles": -1
+            },
+            format="json"
+        )
+        self.assertEqual(respuesta.status_code, 400)
+
+    def test_token_valido_permite_acceso(self):
+        token = Token.objects.create(user=self.viewer)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Token {token.key}"
+        )
+        respuesta = self.client.get(self.url)
+        self.assertEqual(respuesta.status_code, 200)
+
+    def test_token_invalido_rechazado(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Token token_invalido"
+        )
+        respuesta = self.client.get(self.url)
+        self.assertEqual(respuesta.status_code, 401)
+
+    def test_registro_inexistente(self):
+        self.client.force_authenticate(user=self.viewer)
+        respuesta = self.client.get(
+            reverse("registro-detail", args=[99999])
+        )
+        self.assertEqual(respuesta.status_code, 404)

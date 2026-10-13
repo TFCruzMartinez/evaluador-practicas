@@ -1,0 +1,14 @@
+HTTP/1.1 401 Unauthorized
+Date: Tue, 13 Oct 2026 18:18:36 GMT
+Server: WSGIServer/0.2 CPython/3.13.15
+Content-Type: application/json
+WWW-Authenticate: Token
+Vary: Accept, Cookie, origin
+Allow: GET, POST, HEAD, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 65
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"detail":"Las credenciales de autenticación no se proveyeron."}

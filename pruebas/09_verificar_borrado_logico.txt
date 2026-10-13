@@ -1,0 +1,4 @@
+ID: 1
+Existe en la base de datos: True
+Eliminado: True
+Fecha de eliminación: 2026-10-13 18:22:21.533832+00:00

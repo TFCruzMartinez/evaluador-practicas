@@ -1,5 +1,7 @@
+
 """
-Django settings for miproyecto project.
+Django settings for miproyecto.
+Proyecto Evaluador de Prácticas - ES3.
 """
 
 import os
@@ -36,12 +38,21 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# Evitar utilizar la clave de desarrollo en producción
+if not DEBUG:
+    if SECRET_KEY == "django-insecure-clave-local-desarrollo":
+        raise RuntimeError(
+            "Debes configurar una SECRET_KEY segura "
+            "en las variables de entorno."
+        )
+
 
 # =========================================================
-# APLICACIONES
+# APLICACIONES INSTALADAS
 # =========================================================
 
 INSTALLED_APPS = [
+    # Aplicaciones Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,10 +66,13 @@ INSTALLED_APPS = [
     # Django REST Framework
     "rest_framework",
 
+    # Autenticación por token - ES3
+    "rest_framework.authtoken",
+
     # Swagger / OpenAPI
     "drf_spectacular",
 
-    # CORS para permitir consumo desde React
+    # CORS
     "corsheaders",
 ]
 
@@ -70,7 +84,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise para archivos estáticos en producción
+    # Archivos estáticos
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     # CORS
@@ -93,7 +107,7 @@ ROOT_URLCONF = "miproyecto.urls"
 
 
 # =========================================================
-# TEMPLATES
+# TEMPLATES - CORREGIDO
 # =========================================================
 
 TEMPLATES = [
@@ -198,11 +212,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # =========================================================
-# DJANGO REST FRAMEWORK
+# DJANGO REST FRAMEWORK - ES3
 # =========================================================
 
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Documentación OpenAPI
+    "DEFAULT_SCHEMA_CLASS": (
+        "drf_spectacular.openapi.AutoSchema"
+    ),
+
+    # Autenticación por token y sesión
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+
+    # Permisos por defecto
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
 
 
@@ -213,10 +241,13 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "Evaluador de Prácticas API",
     "DESCRIPTION": (
-        "API para evaluar si un estudiante cumple los requisitos "
-        "para postular a una práctica profesional."
+        "API REST para evaluar si un estudiante cumple "
+        "los requisitos para postular a una práctica "
+        "profesional. Incluye autenticación por token, "
+        "permisos y gestión de registros."
     ),
     "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 

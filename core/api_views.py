@@ -1,94 +1,49 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
 
-from drf_spectacular.utils import extend_schema, OpenApiExample
+from rest_framework import viewsets
+from rest_framework.permissions import BasePermission
 
-from .services import evaluar_postulacion
+from .models import Registro
+from .serializers import RegistroSerializer
+from .views import es_admin, es_normal, es_viewer
 
 
-@extend_schema(
-    request={
-        "application/json": {
-            "type": "object",
-            "properties": {
-                "semestre": {
-                    "type": "integer",
-                    "example": 4
-                },
-                "horas_disponibles": {
-                    "type": "integer",
-                    "example": 25
-                }
-            },
-            "required": [
-                "semestre",
-                "horas_disponibles"
-            ]
-        }
-    },
-    responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "semestre": {
-                    "type": "integer"
-                },
-                "horas_disponibles": {
-                    "type": "integer"
-                },
-                "resultado": {
-                    "type": "string"
-                }
-            }
-        }
-    },
-    examples=[
-        OpenApiExample(
-            "Postulación aceptada",
-            value={
-                "semestre": 4,
-                "horas_disponibles": 25
-            },
-            request_only=True
-        )
-    ]
-)
-@api_view(["POST"])
-def evaluar_api(request):
-    semestre = request.data.get("semestre")
-    horas_disponibles = request.data.get("horas_disponibles")
+class RegistroPermission(BasePermission):
+    """
+    Permisos diferenciados por rol.
 
-    if semestre is None or horas_disponibles is None:
-        return Response(
-            {
-                "error": "Debe enviar semestre y horas_disponibles."
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    viewer: consultar
+    normal: consultar y crear
+    admin: consultar, crear, editar y eliminar
+    """
 
-    try:
-        semestre = int(semestre)
-        horas_disponibles = int(horas_disponibles)
+    def has_permission(self, request, view):
+        user = request.user
 
-    except (TypeError, ValueError):
-        return Response(
-            {
-                "error": "Los valores deben ser numéricos."
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        if not user or not user.is_authenticated:
+            return False
 
-    resultado = evaluar_postulacion(
-        semestre,
-        horas_disponibles
-    )
+        if es_admin(user):
+            return True
 
-    return Response(
-        {
-            "semestre": semestre,
-            "horas_disponibles": horas_disponibles,
-            "resultado": resultado
-        },
-        status=status.HTTP_200_OK
-    )
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return es_normal(user) or es_viewer(user)
+
+        if request.method == "POST":
+            return es_normal(user)
+
+        return False
+
+
+class RegistroViewSet(viewsets.ModelViewSet):
+    """
+    API REST para gestionar registros de prácticas.
+    """
+
+    serializer_class = RegistroSerializer
+    permission_classes = [RegistroPermission]
+
+    def get_queryset(self):
+        return Registro.objects.filter(eliminado=False)
+
+    def perform_destroy(self, instance):
+        instance.soft_delete()
